@@ -164,5 +164,3 @@ def total_withdrawn():
 
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
