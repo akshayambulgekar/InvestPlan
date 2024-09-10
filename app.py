@@ -2,6 +2,10 @@ from flask import Flask, render_template, jsonify,request
 app= Flask(__name__)
 
 
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 # This endpoint calculates the required SIP (Systematic Investment Plan) amount needed to achieve a target value given an annual rate of return and a specified investment duration in years.
 @app.route('/api/investment/sip/required',methods=['GET'])
 def required():
