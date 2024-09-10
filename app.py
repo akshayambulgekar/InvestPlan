@@ -31,9 +31,9 @@ def required():
 #  For Post Api
 @app.route('/api/investment/sip/required',methods=['POST'])
 def required_Post():
-    target_value = float(request.args.get('target_value'))
-    annual_rate_of_return = float(request.args.get('annual_rate_of_return'))
-    years = int(request.args.get('years'))
+    target_value = float(request.json['target_value'])
+    annual_rate_of_return = float(request.json['annual_rate_of_return'])
+    years = int(request.json['years'])
 
     rate = float(annual_rate_of_return)/100
     monthly_rate_of_return = rate / 12
@@ -93,12 +93,12 @@ def withdrawals():
 #For Post 
 @app.route('/api/investment/swp/withdrawals',methods=['POST'])
 def withdrawals_Post():
-    initial_investment = float(request.args.get('initial_investment'))
-    withdrawal_amount = float(request.args.get('withdrawal_amount'))
-    withdrawal_frequency = request.args.get('withdrawal_frequency')  # "annually" assumed for simplicity
-    num_withdrawals = int(request.args.get('num_withdrawals'))
-    inflation_rate = float(request.args.get('inflation_rate'))
-    roi = float(request.args.get('roi'))
+    initial_investment = float(request.json['initial_investment'])
+    withdrawal_amount = float(request.json['withdrawal_amount'])
+    withdrawal_frequency = request.json['withdrawal_frequency']  # "annually" assumed for simplicity
+    num_withdrawals = int(request.json['num_withdrawals'])
+    inflation_rate = float(request.json['inflation_rate'])
+    roi = float(request.json['roi'])
     
 
     investment = initial_investment
@@ -174,11 +174,11 @@ def num_until_depleted():
 
 @app.route('/api/withdrawals/swp/num_until_depleted', methods=['POST'] )
 def num_until_depleted_Post():
-    initial_investment = float(request.args.get('initial_investment'))
-    withdrawal_amount = float(request.args.get('withdrawal_amount'))
-    withdrawal_frequency = str(request.args.get('withdrawal_frequency')) 
-    inflation_rate = float(request.args.get('inflation_rate')) 
-    roi = float(request.args.get('roi')) 
+    initial_investment = float(request.json['initial_investment'])
+    withdrawal_amount = float(request.json['withdrawal_amount'])
+    withdrawal_frequency = str(request.json['withdrawal_frequency']) 
+    inflation_rate = float(request.json['inflation_rate']) 
+    roi = float(request.json['roi']) 
     
    
     investment = initial_investment
@@ -267,13 +267,13 @@ def total_withdrawn():
 
     #For Post 
 
-@app.route('/api/withdrawals/swp/total_withdrawn', methods=['POSt'])
+@app.route('/api/withdrawals/swp/total_withdrawn', methods=['POST'])
 def total_withdrawn_Post():
-    initial_investment = float(request.args.get('initial_investment'))
-    withdrawal_amount = float(request.args.get('withdrawal_amount'))
-    withdrawal_frequency = request.args.get('withdrawal_frequency')  
-    inflation_rate = float(request.args.get('inflation_rate')) 
-    roi = float(request.args.get('roi')) 
+    initial_investment = float(request.json['initial_investment'])
+    withdrawal_amount = float(request.json['withdrawal_amount'])
+    withdrawal_frequency = request.json['withdrawal_frequency']  
+    inflation_rate = float(request.json['inflation_rate']) 
+    roi = float(request.json['roi']) 
     
   
     if withdrawal_frequency == "monthly":
@@ -309,7 +309,7 @@ def total_withdrawn_Post():
 
         return jsonify({
         "initial_investment": initial_investment,
-        "withdrawal_amount": float(request.args.get('withdrawal_amount')),
+        "withdrawal_amount": float(request.json['withdrawal_amount']),
         "withdrawal_frequency": withdrawal_frequency,
         "inflation_rate": inflation_rate,
         "roi": roi,
