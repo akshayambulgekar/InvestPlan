@@ -184,46 +184,10 @@ def num_until_depleted_Post():
     withdrawal_frequency = str(request.json['withdrawal_frequency']) 
     inflation_rate = float(request.json['inflation_rate']) 
     roi = float(request.json['roi'])
-   
-    # investment = initial_investment
-    # num_withdrawals_until_depleted = 0
-
-    # if withdrawal_frequency == "monthly":
-    #     withdrawals_per_year = 12
-    # elif withdrawal_frequency == "quarterly":
-    #     withdrawals_per_year = 3
-    # else: 
-    #     withdrawals_per_year = 1
-    
-    # while investment >= withdrawal_amount :
-    #     investment -= withdrawal_amount
-        
-    #     if investment < withdrawal_amount:
-    #         break
-        
-    #     investment +=((investment * roi ) + (investment * inflation_rate))
-        
-    #     num_withdrawals_until_depleted +=1 
-
-    # return jsonify({
-    #         "initial_investment": initial_investment,
-    #         "withdrawal_amount": withdrawal_amount,
-    #         "withdrawal_frequency": withdrawal_frequency,
-    #         "inflation_rate": inflation_rate,
-    #         "roi": roi,
-    #         "num_withdrawals_until_depleted": num_withdrawals_until_depleted ,
-    #         "abcd": investment,
-    #         "result":[
-    #             {
-    #                 "mpney":investment
-    #             }
-    #         ]
-    #     })
 
     num_withdrawals_until_depleted = 0
     current_value = initial_investment
     
-    # Adjust for withdrawal frequency: 'quarterly' to 4 times a year
     frequency_factor = {
         "monthly": 12,
         "quarterly": 4,
@@ -241,8 +205,6 @@ def num_until_depleted_Post():
     
     if num_withdrawals_until_depleted is None:
             return jsonify({'error': 'Invalid withdrawal frequency'}), 400
-        
-        # Prepare the response data
    
     return jsonify({
             "initial_investment": initial_investment,
