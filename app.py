@@ -101,28 +101,28 @@ def withdrawals_Post():
     inflation_rate = float(request.json['inflation_rate']) 
     roi = float(request.json['roi'])
     
-
+    amount = withdrawal_amount
     investment = initial_investment
     results = []
 
     for withdrawal_num in range(1, num_withdrawals + 1):
         investment_growth = investment * roi
-        investment = investment + investment_growth - withdrawal_amount
+        investment = investment + investment_growth - amount
         
         results.append({
             "current_investment": round(investment, 2),
             "investment_growth": round(investment_growth, 2),
             "withdrawal": withdrawal_num,
-            "withdrawal_per_period": round(withdrawal_amount, 2)
+            "withdrawal_per_period": round(amount, 2)
         })
         
        
-        withdrawal_amount += withdrawal_amount * inflation_rate
+        amount += amount * inflation_rate
 
 
     return jsonify({
         "initial_investment": initial_investment,
-        "withdrawal_amount": request.args.get('withdrawal_amount'),
+        "withdrawal_amount": withdrawal_amount,
         "withdrawal_frequency": withdrawal_frequency,
         "num_withdrawals": num_withdrawals,
         "inflation_rate": inflation_rate,
