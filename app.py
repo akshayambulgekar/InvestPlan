@@ -131,49 +131,44 @@ def withdrawals_Post():
     })
     
 # This endpoint calculates the number of withdrawals that can be made from an initial investment, given a withdrawal amount, withdrawal frequency, inflation rate, and rate of return, before the investment is depleted.
-@app.route('/api/withdrawals/swp/num_until_depleted', methods=['GET'] )
+@app.route('/api/withdrawals/swp/num_until_depleted', methods=['GET'])
 def num_until_depleted():
+    # Get data from URL parameters (query string)
     initial_investment = float(request.args.get('initial_investment'))
     withdrawal_amount = float(request.args.get('withdrawal_amount'))
-    withdrawal_frequency = str(request.args.get('withdrawal_frequency')) 
-    inflation_rate = float(request.args.get('inflation_rate')) 
-    roi = float(request.args.get('roi')) 
+    withdrawal_frequency = str(request.args.get('withdrawal_frequency'))
+    inflation_rate = float(request.args.get('inflation_rate'))
+    roi = float(request.args.get('roi'))
     
-   
-    investment = initial_investment
     num_withdrawals_until_depleted = 0
-
-    if withdrawal_frequency == "monthly":
-        withdrawals_per_year = 12
-    elif withdrawal_frequency == "quarterly":
-        withdrawals_per_year = 3
-    else: 
-        withdrawals_per_year = 1
+    current_value = initial_investment
     
-    while investment >= withdrawal_amount :
-        investment -= withdrawal_amount
-        
-        if investment < withdrawal_amount:
-            break
-        
-        investment +=((investment * roi ) + (investment * inflation_rate))
-        
-        num_withdrawals_until_depleted +=1 
+    frequency_factor = {
+        "monthly": 12,
+        "quarterly": 4,
+        "yearly": 1
+    }
+    
+    # Check if withdrawal_frequency is valid
+    if withdrawal_frequency not in frequency_factor:
+        return jsonify({'error': 'Invalid withdrawal frequency'}), 400
 
+    frequency = frequency_factor[withdrawal_frequency]
+
+    # Calculation loop to determine number of withdrawals
+    while current_value > 0:
+        current_value = (current_value - withdrawal_amount) * (1 + (roi - inflation_rate) / frequency)
+        num_withdrawals_until_depleted += 1
+    
+    # Return the response as JSON
     return jsonify({
-            "initial_investment": initial_investment,
-            "withdrawal_amount": withdrawal_amount,
-            "withdrawal_frequency": withdrawal_frequency,
-            "inflation_rate": inflation_rate,
-            "roi": roi,
-            "num_withdrawals_until_depleted": num_withdrawals_until_depleted ,
-            "abcd": investment,
-            "result":[
-                {
-                    "mpney":investment
-                }
-            ]
-        })
+        "initial_investment": initial_investment,
+        "withdrawal_amount": withdrawal_amount,
+        "withdrawal_frequency": withdrawal_frequency,
+        "inflation_rate": inflation_rate,
+        "roi": roi,
+        "num_withdrawals_until_depleted": num_withdrawals_until_depleted
+    }), 200
 
 # For Post 
 
