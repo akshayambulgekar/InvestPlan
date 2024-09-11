@@ -58,7 +58,7 @@ def withdrawals():
     withdrawal_amount = float(request.args.get('withdrawal_amount'))
     withdrawal_frequency = request.args.get('withdrawal_frequency')  # "annually" assumed for simplicity
     num_withdrawals = int(request.args.get('num_withdrawals'))
-    inflation_rate = float(request.args.get('inflation_rate'))
+    inflation_rate = float(request.args.get('inflation_rate')) / 100
     roi = float(request.args.get('roi'))
     
 
@@ -67,6 +67,7 @@ def withdrawals():
 
     for withdrawal_num in range(1, num_withdrawals + 1):
         investment_growth = investment * roi
+        investment = investment + investment_growth - withdrawal_amount
         
         results.append({
             "current_investment": round(investment, 2),
@@ -75,7 +76,7 @@ def withdrawals():
             "withdrawal_per_period": round(withdrawal_amount, 2)
         })
         
-        investment = investment + investment_growth - withdrawal_amount
+       
         withdrawal_amount += withdrawal_amount * inflation_rate
 
 
@@ -97,7 +98,7 @@ def withdrawals_Post():
     withdrawal_amount = float(request.json['withdrawal_amount'])
     withdrawal_frequency = request.json['withdrawal_frequency']  # "annually" assumed for simplicity
     num_withdrawals = int(request.json['num_withdrawals'])
-    inflation_rate = float(request.json['inflation_rate'])
+    inflation_rate = float(request.json['inflation_rate']) 
     roi = float(request.json['roi'])
     
 
@@ -106,6 +107,7 @@ def withdrawals_Post():
 
     for withdrawal_num in range(1, num_withdrawals + 1):
         investment_growth = investment * roi
+        investment = investment + investment_growth - withdrawal_amount
         
         results.append({
             "current_investment": round(investment, 2),
@@ -114,7 +116,7 @@ def withdrawals_Post():
             "withdrawal_per_period": round(withdrawal_amount, 2)
         })
         
-        investment = investment + investment_growth - withdrawal_amount
+       
         withdrawal_amount += withdrawal_amount * inflation_rate
 
 
@@ -139,27 +141,24 @@ def num_until_depleted():
     
    
     investment = initial_investment
-    withdrawals_made = 0
+    num_withdrawals_until_depleted = 0
 
     if withdrawal_frequency == "monthly":
         withdrawals_per_year = 12
     elif withdrawal_frequency == "quarterly":
-        withdrawals_per_year = 4
+        withdrawals_per_year = 3
     else: 
         withdrawals_per_year = 1
     
-    while investment > 0:
-        if withdrawals_made > 0 and withdrawals_made % withdrawals_per_year == 0:
-            withdrawal_amount += withdrawal_amount * inflation_rate
-        
+    while investment >= withdrawal_amount :
         investment -= withdrawal_amount
         
-        if investment < 0:
+        if investment < withdrawal_amount:
             break
         
-        investment += investment * (roi / withdrawals_per_year)
+        investment +=((investment * roi ) + (investment * inflation_rate))
         
-        withdrawals_made += 1
+        num_withdrawals_until_depleted +=1 
 
     return jsonify({
             "initial_investment": initial_investment,
@@ -167,7 +166,13 @@ def num_until_depleted():
             "withdrawal_frequency": withdrawal_frequency,
             "inflation_rate": inflation_rate,
             "roi": roi,
-            "num_withdrawals_until_depleted": withdrawals_made
+            "num_withdrawals_until_depleted": num_withdrawals_until_depleted ,
+            "abcd": investment,
+            "result":[
+                {
+                    "mpney":investment
+                }
+            ]
         })
 
 # For Post 
@@ -178,40 +183,77 @@ def num_until_depleted_Post():
     withdrawal_amount = float(request.json['withdrawal_amount'])
     withdrawal_frequency = str(request.json['withdrawal_frequency']) 
     inflation_rate = float(request.json['inflation_rate']) 
-    roi = float(request.json['roi']) 
-    
+    roi = float(request.json['roi'])
    
-    investment = initial_investment
-    withdrawals_made = 0
+    # investment = initial_investment
+    # num_withdrawals_until_depleted = 0
 
-    if withdrawal_frequency == "monthly":
-        withdrawals_per_year = 12
-    elif withdrawal_frequency == "quarterly":
-        withdrawals_per_year = 4
-    else: 
-        withdrawals_per_year = 1
+    # if withdrawal_frequency == "monthly":
+    #     withdrawals_per_year = 12
+    # elif withdrawal_frequency == "quarterly":
+    #     withdrawals_per_year = 3
+    # else: 
+    #     withdrawals_per_year = 1
     
-    while investment > 0:
-        if withdrawals_made > 0 and withdrawals_made % withdrawals_per_year == 0:
-            withdrawal_amount += withdrawal_amount * inflation_rate
+    # while investment >= withdrawal_amount :
+    #     investment -= withdrawal_amount
         
-        investment -= withdrawal_amount
+    #     if investment < withdrawal_amount:
+    #         break
         
-        if investment < 0:
-            break
+    #     investment +=((investment * roi ) + (investment * inflation_rate))
         
-        investment += investment * (roi / withdrawals_per_year)
-        
-        withdrawals_made += 1
+    #     num_withdrawals_until_depleted +=1 
 
+    # return jsonify({
+    #         "initial_investment": initial_investment,
+    #         "withdrawal_amount": withdrawal_amount,
+    #         "withdrawal_frequency": withdrawal_frequency,
+    #         "inflation_rate": inflation_rate,
+    #         "roi": roi,
+    #         "num_withdrawals_until_depleted": num_withdrawals_until_depleted ,
+    #         "abcd": investment,
+    #         "result":[
+    #             {
+    #                 "mpney":investment
+    #             }
+    #         ]
+    #     })
+
+    num_withdrawals_until_depleted = 0
+    current_value = initial_investment
+    
+    # Adjust for withdrawal frequency: 'quarterly' to 4 times a year
+    frequency_factor = {
+        "monthly": 12,
+        "quarterly": 4,
+        "yearly": 1
+    }
+    
+    if withdrawal_frequency not in frequency_factor:
+        return None
+
+    frequency = frequency_factor[withdrawal_frequency]
+
+    while current_value > 0:
+        current_value = (current_value - withdrawal_amount) * (1 + (roi - inflation_rate) / frequency)
+        num_withdrawals_until_depleted += 1
+    
+    if num_withdrawals_until_depleted is None:
+            return jsonify({'error': 'Invalid withdrawal frequency'}), 400
+        
+        # Prepare the response data
+   
     return jsonify({
             "initial_investment": initial_investment,
             "withdrawal_amount": withdrawal_amount,
             "withdrawal_frequency": withdrawal_frequency,
             "inflation_rate": inflation_rate,
             "roi": roi,
-            "num_withdrawals_until_depleted": withdrawals_made
-        })
+            "num_withdrawals_until_depleted": num_withdrawals_until_depleted
+        }), 200
+
+    
 # This endpoint calculates the total amount of money that can be withdrawn from an initial investment, given a withdrawal amount, withdrawal frequency, inflation rate, rate of return, and investment duration.
 @app.route('/api/withdrawals/swp/total_withdrawn', methods=['GET'])
 def total_withdrawn():
